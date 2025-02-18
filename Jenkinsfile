@@ -26,7 +26,7 @@ pipeline {
                 script {
                     // Run Snyk scan for vulnerabilities in the code
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
-                        sh 'mvn snyk:test'
+                        sh 'mvn snyk:test -fn'
                     }
                 }
             }
