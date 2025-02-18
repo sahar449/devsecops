@@ -8,25 +8,15 @@ pipeline {
     environment {
         IMAGE_NAME = 'my-java-app'
         IMAGE_TAG = 'latest'
+        SNYK_TOKEN = credentials('snyk-token') // Assuming the Snyk token is stored as a Jenkins secret
     }
 
     stages {
-
-        stage('Build') {
+        stage('Snyk Security Scan') {
             steps {
                 script {
-                    // Build the project using Maven
-                    sh 'mvn clean install'
-                }
-            }
-        }
-
-        stage('Snyk Scan - Code') {
-            steps {
-                script {
-                    // Run Snyk scan for vulnerabilities in the code
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
-                        sh 'mvn snyk:test -fn'
+                        sh 'mvn snyk:test -DfailOnError=false'
                     }
                 }
             }
@@ -35,28 +25,26 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build Docker image
                     docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
                 }
             }
         }
 
-        stage('Deploy to Staging Environment') {
+        stage('Run Integration Tests') {
             steps {
                 script {
-                    // Deploy to staging environment
-                    sh "docker run -d -p 2:8080 ${IMAGE_NAME}:${IMAGE_TAG}"
+                    // Run your integration tests here
+                    sh 'mvn test'
                 }
             }
         }
 
-        stage('Integration Tests') {
+        stage('Deploy to Stage') {
             steps {
                 script {
-                    // Run integration tests on the deployed container
-                    sh '''
-                    curl --fail http://localhost:2/|| exit 1
-                    '''
+                    // Deploy the docker image to staging using Docker CLI
+                    sh 'docker tag ${IMAGE_NAME}:${IMAGE_TAG} my-registry/${IMAGE_NAME}:${IMAGE_TAG}'
+                    sh 'docker push my-registry/${IMAGE_NAME}:${IMAGE_TAG}'
                 }
             }
         }
