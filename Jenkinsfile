@@ -16,7 +16,7 @@ pipeline {
         stage('Snyk Security Scan') {
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
+                        {
                         sh 'mvn snyk:test -fn'
                     }
                 }
