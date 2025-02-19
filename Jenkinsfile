@@ -8,7 +8,8 @@ pipeline {
     environment {
         IMAGE_NAME = 'my-java-app'
         IMAGE_TAG = 'latest'
-        SNYK_TOKEN = credentials('snyk-token') // Assuming the Snyk token is stored as a Jenkins secret
+        CONTAINER_NAME = 'my-java-app-container'
+        SNYK_TOKEN = credentials('snyk-token') // Jenkins secret
     }
 
     stages {
@@ -16,8 +17,16 @@ pipeline {
             steps {
                 script {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
-                        sh 'mvn snyk:test -DfailOnError=false'
+                        sh 'mvn snyk:test -fn'
                     }
+                }
+            }
+        }
+
+        stage('Build and Verify') {
+            steps {
+                script {
+                    sh 'mvn clean verify'
                 }
             }
         }
@@ -30,21 +39,30 @@ pipeline {
             }
         }
 
-        stage('Run Integration Tests') {
+        stage('Deploy and Run Container') {
             steps {
                 script {
-                    // Run your integration tests here
-                    sh 'mvn test'
+                    // Stop and remove any existing container
+                    sh "docker rm -f ${CONTAINER_NAME} || true"
+
+                    // Run the new container on port 8080
+                    sh """
+                        docker run -d --name ${CONTAINER_NAME} -p 3:8080 ${IMAGE_NAME}:${IMAGE_TAG}
+                    """
                 }
             }
         }
 
-        stage('Deploy to Stage') {
+        stage('Integration Test') {
             steps {
                 script {
-                    // Deploy the docker image to staging using Docker CLI
-                    sh 'docker tag ${IMAGE_NAME}:${IMAGE_TAG} my-registry/${IMAGE_NAME}:${IMAGE_TAG}'
-                    sh 'docker push my-registry/${IMAGE_NAME}:${IMAGE_TAG}'
+                    echo "Waiting for container to start..."
+                    sleep(5) // Give the container time to boot up
+
+                    echo "Running integration test with curl..."
+                    sh 'curl -f http://localhost:3 || (echo "Container did not start properly!" && exit 1)'
+
+                    echo "Integration test passed!"
                 }
             }
         }
