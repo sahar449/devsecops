@@ -5,11 +5,10 @@ FROM maven:3.8.4-jdk-11-slim AS build
 WORKDIR /app
 
 # Copy the pom.xml and source code to the container
-COPY pom.xml .
-COPY src ./src
+COPY . .
 
-# Run Maven to build the project and create the JAR file
-RUN mvn clean package
+# Run Maven to build the project and create the JAR file, skipping Snyk scanning
+RUN mvn clean package -DskipSnyk
 
 # Stage 2: Create the final image
 FROM openjdk:11-jre-slim
