@@ -45,7 +45,7 @@ pipeline {
 
                     // Run the new container on port 8080
                     sh """
-                        docker run -d --name ${CONTAINER_NAME} -p 8080:8080 ${IMAGE_NAME}:${IMAGE_TAG}
+                        docker run -d --name ${CONTAINER_NAME} -p 4:8080 ${IMAGE_NAME}:${IMAGE_TAG}
                     """
                 }
             }
@@ -58,7 +58,7 @@ pipeline {
                     sleep(5) // Give the container time to boot up
 
                     echo "Running integration test with curl..."
-                    sh 'curl -f http://localhost:8080 || (echo "Container did not start properly!" && exit 1)'
+                    sh 'curl -f http://localhost:4 || (echo "Container did not start properly!" && exit 1)'
 
                     echo "Integration test passed!"
                 }
