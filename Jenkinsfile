@@ -1,7 +1,6 @@
 pipeline {
     agent any
     tools {
-        // Assuming you are using a custom tool installer for Snyk
         snyk 'snyk' // Replace with the actual name you have configured for the Snyk installation
     }
     environment {
@@ -38,10 +37,10 @@ pipeline {
                 sh "docker build -t hello-world ."
             }
         }
-        stage('Snyk Scan') {
+        stage('Snyk Scan Docker Image') {
             steps {
-                // Run Snyk SCA (Software Composition Analysis) scan on the Docker image
-                sh "snyk container test hello-world --severity-threshold=critical"
+                // Run Snyk scan on the Docker image
+                sh "snyk container test hello-world --severity-threshold=critical --token=${SNYK_TOKEN}"
             }
         }
         stage('Run Docker Container') {
