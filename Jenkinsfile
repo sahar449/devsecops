@@ -2,7 +2,7 @@ pipeline {
     agent any
     tools {
         // Assuming you are using a custom tool installer for Snyk
-        snyk 'Snyk' // Replace with the actual name you have configured for the Snyk installation
+        snyk 'snyk' // Replace with the actual name you have configured for the Snyk installation
     }
     environment {
         SNYK_TOKEN = credentials('snyk-token') // Your Snyk API token
