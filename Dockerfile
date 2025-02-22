@@ -19,8 +19,8 @@ COPY src ./src
 ARG SNYK_TOKEN
 ENV SNYK_TOKEN=${SNYK_TOKEN}
 
-# Authenticate with Snyk and build the application
-RUN snyk auth ${SNYK_TOKEN} && mvn clean package
+# Authenticate with Snyk using the token and build the application
+RUN snyk config set api=${SNYK_TOKEN} && mvn clean package
 
 # Stage 2: Create a lightweight image with the built JAR
 FROM openjdk:11-jre-slim
