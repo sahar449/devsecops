@@ -8,15 +8,17 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-# Install Snyk CLI
-RUN curl -sSL https://static.snyk.io/cli/latest/snyk-linux -o /usr/local/bin/snyk && \
-    chmod +x /usr/local/bin/snyk
-
-# Authenticate with Snyk and build the application
-RUN snyk auth ${SNYK_TOKEN} && mvn clean package
+# Build the application and run tests
+RUN mvn clean package
 
 # Stage 2: Create a lightweight image with the built JAR
 FROM openjdk:11-jre-slim
+
+# Ensure that the package list is up-to-date and install necessary packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    zlib1g=1:1.2.11.dfsg-2+deb11u2 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory for the final image
 WORKDIR /app
