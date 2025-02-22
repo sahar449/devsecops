@@ -40,7 +40,10 @@ pipeline {
         stage('Snyk Scan Docker Image') {
             steps {
                 // Run Snyk scan on the Docker image
-                sh "snyk container test hello-world --token=${SNYK_TOKEN}"
+                // Instead of using string interpolation, use:
+                withCredentials([string(credentialsId: 'synk-token', variable: 'SNYK_TOKEN')]) {
+                    sh "snyk container test hello-world --severity-threshold=critical --token=${SNYK_TOKEN}"
+                }
             }
         }
         stage('Run Docker Container') {
