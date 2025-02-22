@@ -8,8 +8,12 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
+# Inject the Snyk token as an environment variable
+ARG SNYK_TOKEN
+ENV SNYK_TOKEN=${SNYK_TOKEN}
+
 # Build the application and run tests
-RUN mvn clean package
+RUN snyk auth ${SNYK_TOKEN} && mvn clean package
 
 # Stage 2: Create a lightweight image with the built JAR
 FROM openjdk:11-jre-slim

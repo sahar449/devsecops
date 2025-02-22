@@ -26,7 +26,8 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t hello-world .'
+                // Pass the SNYK_TOKEN as a build argument
+                sh 'docker build --build-arg SNYK_TOKEN=$SNYK_TOKEN -t hello-world .'
             }
         }
         stage('Run Docker Container') {
