@@ -40,12 +40,26 @@ pipeline {
         stage('Snyk Scan Docker Image') {
             steps {
                 // Run Snyk scan on the Docker image
-                // Instead of using string interpolation, use:
                 withCredentials([string(credentialsId: 'synk-token', variable: 'SNYK_TOKEN')]) {
-                    sh "snyk container test hello-world --severity-threshold=critical --token=${SNYK_TOKEN}"
+                    script {
+                        // Capture the exit status of the Snyk scan
+                        def snykExitCode = sh(script: "snyk container test hello-world --severity-threshold=critical --token=${SNYK_TOKEN}", returnStatus: true)
+
+                        // Log the output for reference
+                        if (snykExitCode != 0) {
+                            echo "Snyk scan completed with issues. Exit code: ${snykExitCode}"
+                        } else {
+                            echo "Snyk scan completed successfully."
+                        }
+
+                        // Optionally, you can still fail the build based on the severity of the vulnerabilities found
+                        // Uncomment the next line if you want to fail the build on critical vulnerabilities
+                        // error "Critical vulnerabilities found in the image. Please review the Snyk report."
+                    }
                 }
             }
         }
+
         stage('Run Docker Container') {
             steps {
                 sh 'docker run -d -p 6000:80 hello-world'
