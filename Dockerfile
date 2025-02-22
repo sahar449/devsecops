@@ -23,8 +23,8 @@ RUN apt-get update && \
 # Set the working directory for the final image
 WORKDIR /app
 
-# Copy the built JAR from the build stage
-COPY --from=build /app/target/hello-world-1.0-SNAPSHOT.jar ./hello-world.jar
+# Copy the entire application from the build stage to the final image
+COPY --from=build /app ./
 
 # Specify the command to run the application and sleep for 3600 seconds
-CMD ["sh", "-c", "java -jar hello-world.jar & sleep 3600"]
+CMD ["sh", "-c", "java -jar hello-world-1.0-SNAPSHOT.jar & sleep 3600"]
