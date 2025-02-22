@@ -19,13 +19,21 @@ pipeline {
             }
         }
         stage('Snyk Scan') {
-            steps {
+            steps {                
                 // Run the Snyk scan with the provided token
                 sh 'snyk-linux test --severity-threshold=critical --all-projects --token=$SNYK_TOKEN'
             }
         }
         stage('Build Docker Image') {
             steps {
+                script {
+                    // Check if the Docker image exists and remove it if it does
+                    def imageName = 'hello-world'
+                    def imageExists = sh(script: "docker images -q ${imageName}", returnStdout: true).trim()
+                    if (imageExists) {
+                        sh "docker rmi -f ${imageName}"
+                    }
+                }
                 // Pass the SNYK_TOKEN as a build argument
                 sh 'docker build --build-arg SNYK_TOKEN=$SNYK_TOKEN -t hello-world .'
             }
@@ -34,6 +42,6 @@ pipeline {
             steps {
                 sh 'docker run -d -p 6000:80 hello-world'
             }
+            }
         }
     }
-}
