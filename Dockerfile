@@ -8,7 +8,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-# Build the application and run tests
+# Build the application and run tests (Snyk will not be included here)
 RUN mvn clean package
 
 # Stage 2: Create a lightweight image with the built JAR
@@ -26,5 +26,5 @@ WORKDIR /app
 # Copy the built JAR from the build stage
 COPY --from=build /app/target/hello-world.jar ./hello-world.jar
 
-# Specify the command to run the application
-CMD ["java", "-jar", "hello-world.jar"]
+# Specify the command to run the application and sleep for 3600 seconds
+CMD ["sh", "-c", "java -jar hello-world.jar & sleep 3600"]

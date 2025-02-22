@@ -18,6 +18,12 @@ pipeline {
                 sh 'mvn test'
             }
         }
+        stage('Snyk SAST Scan') {
+            steps {
+                // Run Snyk SAST scan on the source code
+                sh "snyk test --all-projects --severity-threshold=critical --token=${SNYK_TOKEN}"
+            }
+        }
         stage('Build Docker Image') {
             steps {
                 script {
@@ -29,14 +35,13 @@ pipeline {
                     }
                 }
                 // Pass the SNYK_TOKEN as a build argument
-                sh "docker build --build-arg SNYK_TOKEN=${SNYK_TOKEN} -t hello-world ."
+                sh "docker build -t hello-world ."
             }
         }
         stage('Snyk Scan') {
             steps {
-                // Run Snyk SAST and SCA scans
-                sh 'snyk-linux test --all-projects --all-sub-projects --severity-threshold=critical --token=$SNYK_TOKEN'
-                sh 'snyk-linux container test hello-world --severity-threshold=critical --token=$SNYK_TOKEN'
+                // Run Snyk SCA (Software Composition Analysis) scan on the Docker image
+                sh "snyk container test hello-world --severity-threshold=critical"
             }
         }
         stage('Run Docker Container') {
