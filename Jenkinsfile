@@ -21,7 +21,7 @@ pipeline {
         stage('Snyk Scan') {
             steps {
                 // Run the Snyk scan with the provided token
-                sh 'snyk test --severity-threshold=critical --all-projects --token=$SNYK_TOKEN'
+                sh 'snyk-linux test --severity-threshold=critical --all-projects --token=$SNYK_TOKEN'
             }
         }
         stage('Build Docker Image') {
